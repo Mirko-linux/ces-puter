@@ -1,5 +1,5 @@
-import * as puterModule from 'puter'
+import { createServer } from 'puter'
 import config from './puter.config.mjs'
 
-const puter = puterModule.default?.puter || puterModule.puter || puterModule
-puter(config)
+config.port = process.env.PORT || 1337
+createServer(config)
