@@ -1,9 +1,15 @@
 {
   "type": "module",
+  "name": "ces360",
+  "version": "1.0.0",
   "scripts": {
-    "start": "node start.mjs"
+    "start": "node server.mjs"
   },
   "dependencies": {
-    "puter": "latest"
+    "dotenv": "^16.3.1",
+    "express": "^4.19.2",
+    "lowdb": "^6.0.1",
+    "openai": "^4.29.0",
+    "rate-limiter-flexible": "^2.4.3"
   }
 }
