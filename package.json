@@ -4,6 +4,6 @@
     "start": "node start.mjs"
   },
   "dependencies": {
-    "puter": "^latest"
+    "puter": "latest"
   }
 }
