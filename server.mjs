@@ -21,12 +21,14 @@ const MASTER_KEY = process.env.MASTER_KEY
 
 // === Rate limiting ===
 const limiter = new RateLimiterMemory({
-  points: 100, // max 100 requests
-  duration: 60 // per minute
+  points: 100,
+  duration: 60
 })
+
+// === Auth Middleware (esclude /api/new-key) ===
 app.use(async (req, res, next) => {
-  if (req.path === '/api/new-key') {
-    return next() // NON richiede autenticazione
+  if (req.method === 'POST' && req.originalUrl.startsWith('/api/new-key')) {
+    return next()
   }
 
   const auth = req.headers.authorization || ''
@@ -47,6 +49,7 @@ app.use(async (req, res, next) => {
   req.apiKey = token
   next()
 })
+
 // === /api/chat ===
 app.post('/api/chat', async (req, res) => {
   const prompt = req.body.prompt
