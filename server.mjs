@@ -19,18 +19,22 @@ try {
 }
 const MASTER_KEY = process.env.MASTER_KEY
 
+// === /api/new-key (pubblico, va DEFINITO PRIMA del middleware) ===
+app.post('/api/new-key', (req, res) => {
+  const newKey = 'sk-' + crypto.randomBytes(8).toString('hex')
+  keys[newKey] = true
+  fs.writeFileSync('./keys.json', JSON.stringify(keys, null, 2))
+  res.json({ apiKey: newKey })
+})
+
 // === Rate limiting ===
 const limiter = new RateLimiterMemory({
   points: 100,
   duration: 60
 })
 
-// === Auth Middleware (esclude /api/new-key) ===
+// === Auth Middleware (solo dopo new-key)
 app.use(async (req, res, next) => {
-  if (req.method === 'POST' && req.originalUrl.startsWith('/api/new-key')) {
-    return next()
-  }
-
   const auth = req.headers.authorization || ''
   const token = auth.replace(/^Bearer\s+/i, '').trim()
 
@@ -50,7 +54,7 @@ app.use(async (req, res, next) => {
   next()
 })
 
-// === /api/chat ===
+// === /api/chat (protetto) ===
 app.post('/api/chat', async (req, res) => {
   const prompt = req.body.prompt
   if (!prompt) return res.status(400).json({ error: 'Missing prompt' })
@@ -72,14 +76,6 @@ app.post('/api/chat', async (req, res) => {
     console.error(err)
     res.status(500).json({ error: 'Error from model provider', details: err.message })
   }
-})
-
-// === /api/new-key (pubblico) ===
-app.post('/api/new-key', (req, res) => {
-  const newKey = 'sk-' + crypto.randomBytes(8).toString('hex')
-  keys[newKey] = true
-  fs.writeFileSync('./keys.json', JSON.stringify(keys, null, 2))
-  res.json({ apiKey: newKey })
 })
 
 // === Start server ===
