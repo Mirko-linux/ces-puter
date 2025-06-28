@@ -24,9 +24,11 @@ const limiter = new RateLimiterMemory({
   points: 100, // max 100 requests
   duration: 60 // per minute
 })
-
-// === Auth Middleware ===
 app.use(async (req, res, next) => {
+  if (req.path === '/api/new-key') {
+    return next() // NON richiede autenticazione
+  }
+
   const auth = req.headers.authorization || ''
   const token = auth.replace(/^Bearer\s+/i, '').trim()
 
@@ -45,7 +47,6 @@ app.use(async (req, res, next) => {
   req.apiKey = token
   next()
 })
-
 // === /api/chat ===
 app.post('/api/chat', async (req, res) => {
   const prompt = req.body.prompt
