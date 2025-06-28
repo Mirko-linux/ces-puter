@@ -1,5 +1,2 @@
-import puterModule from 'puter'
-import config from './puter.config.mjs'
-
-const puter = puterModule.default || puterModule
-puter(config)
+import * as puterModule from 'puter'
+console.log('Contenuto di puterModule:', puterModule)
