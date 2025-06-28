@@ -1,5 +1,5 @@
 export default {
-  port: 1337,
+  port: process.env.PORT || 1337,
   models: {
     'llama3-8b': {
       provider: 'huggingface',
