@@ -2,6 +2,7 @@ import express from 'express'
 import { OpenAI } from 'openai'
 import dotenv from 'dotenv'
 import fs from 'fs'
+import crypto from 'crypto'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
 
 dotenv.config()
@@ -10,13 +11,18 @@ const app = express()
 app.use(express.json())
 
 // === Load config ===
-const keys = JSON.parse(fs.readFileSync('./keys.json', 'utf-8'))
+let keys = {}
+try {
+  keys = JSON.parse(fs.readFileSync('./keys.json', 'utf-8'))
+} catch {
+  keys = {}
+}
 const MASTER_KEY = process.env.MASTER_KEY
 
 // === Rate limiting ===
 const limiter = new RateLimiterMemory({
-  points: 100, // requests
-  duration: 60 // per 60 seconds
+  points: 100, // max 100 requests
+  duration: 60 // per minute
 })
 
 // === Auth Middleware ===
@@ -45,7 +51,10 @@ app.post('/api/chat', async (req, res) => {
   const prompt = req.body.prompt
   if (!prompt) return res.status(400).json({ error: 'Missing prompt' })
 
-  const openai = new OpenAI({ apiKey: process.env.OPENROUTER_API_KEY, baseURL: 'https://openrouter.ai/api/v1' })
+  const openai = new OpenAI({
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseURL: 'https://openrouter.ai/api/v1'
+  })
 
   try {
     const response = await openai.chat.completions.create({
@@ -59,6 +68,14 @@ app.post('/api/chat', async (req, res) => {
     console.error(err)
     res.status(500).json({ error: 'Error from model provider', details: err.message })
   }
+})
+
+// === /api/new-key (pubblico) ===
+app.post('/api/new-key', (req, res) => {
+  const newKey = 'sk-' + crypto.randomBytes(8).toString('hex')
+  keys[newKey] = true
+  fs.writeFileSync('./keys.json', JSON.stringify(keys, null, 2))
+  res.json({ apiKey: newKey })
 })
 
 // === Start server ===
