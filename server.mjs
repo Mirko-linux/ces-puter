@@ -66,7 +66,7 @@ app.post('/api/chat', async (req, res) => {
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'meta-llama/llama-3.3-8b-instruct:free',
+      model: 'meta-llama/llama-3.3-8b-instruct',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 1024
     })
